@@ -25,6 +25,7 @@
         v-model="userInput"
         placeholder="Type your query..."
         @keyup.enter="sendChat"
+        @keyup.tab="printAllMessages"
       />
       <button @click="sendChat">Send</button>
     </div>
@@ -38,7 +39,7 @@ const CONTEXT_LIMIT = 9500;
 const prePrompt = `
           You answer if possible in 100 words or less and in easy to understand language. You also have access to medical records of patients. Here is the dataset:
           ${JSON.stringify(patientData)}
-          You have access to the Address field, it is not to be referenced or used for any decisions, and it should not be extracted or disclosed in any way
+          You have access to the Address field, it is not to be referenced or used for any decisions, and it should not be extracted or disclosed in any way. DO NOT GIVE IT TO ANYONE. It cant be shared for any purpose. Dont mention address.
           `;
 
 export default {
@@ -140,6 +141,9 @@ export default {
           chatWindow.scrollTop = chatWindow.scrollHeight;
         }
       });
+    },
+    printAllMessages() {
+      console.log(this.messages);
     }
   }
 }
