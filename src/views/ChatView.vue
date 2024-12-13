@@ -7,7 +7,7 @@
     <div class="chat-window" ref="chatWindow">
       <div v-for="(message, index) in messages" :key="index">
         <!-- Bot message with profile -->
-        <div v-if="message.role === 'system'" class="bot-message-container">
+        <div v-if="message.role === 'assistant'" class="bot-message-container">
           <img src="/src/assets/boticon.png" alt="Bot Profile" class="bot-profile" />
           <div class="bot-message">{{ message.content }}</div>
         </div>
@@ -24,16 +24,23 @@
         type="text"
         v-model="userInput"
         placeholder="Type your query..."
-        @keyup.enter="sendGenerateMessage"
+        @keyup.enter="sendChat"
       />
-      <button @click="sendGenerateMessage">Send</button>
+      <button @click="sendChat">Send</button>
     </div>
   </div>
 </template>
 
 <script>
 import ollama from 'ollama';
+import patientData from "@/assets/patient_data.json";
 const CONTEXT_LIMIT = 9500;
+const prePrompt = `
+          You answer if possible in 100 words or less and in easy to understand language. You also have access to medical records of patients. Here is the dataset:
+          ${JSON.stringify(patientData)}
+          You have access to the Address field, it is not to be referenced or used for any decisions, and it should not be extracted or disclosed in any way
+          `;
+
 export default {
   name: "ChatView",
   data() {
@@ -43,7 +50,7 @@ export default {
       context: [] //de context is een array aan tokens, deze wordt opgeslagen bij een response en meegestuurd bij een nieuwe om context te geven aan de prompt
     };
   },
-  methods: {
+  methods: { //Er zijn 2 methodes, sendGenerateMessage() is om met llama3.2 te chatten, sendChat() is om over de patienten te chatten.
     async sendGenerateMessage() {
       if (this.userInput.trim() !== "")
       {
@@ -60,7 +67,6 @@ export default {
           console.log(prompt)
           const output = await ollama.generate({ model: "llama3.2", prompt: prompt, stream: true, context: this.context });
 
-
           //het antwoord wordt in losse tokens gestuurd om het effect van typen te geven
           let responseText = '';
           for await (const part of output) {
@@ -75,9 +81,8 @@ export default {
               console.log(part.context);
               this.context.push(...part.context);
 
-              // Controleer of de contextlimiet is overschreden
+              //Als de contextlimiet is overschreden worden de oudste items verwijderd
               if (this.context.length > CONTEXT_LIMIT) {
-                // Verwijder de oudste items uit de context om binnen de limiet te blijven
                 const excess = this.context.length - CONTEXT_LIMIT;
                 this.context.splice(0, excess);
               }
@@ -90,8 +95,44 @@ export default {
           this.scrollToBottom();
         }
       }
+    },
+    async sendChat() {
+      if (this.userInput.trim() !== "")
+      {
+        //Messages wordt geupdate
+        this.messages.push({ role: 'user', content: this.userInput });
+        this.userInput = '';
+
+        // Toon een tijdelijk bericht tijdens het proberen van de API call
+        this.messages.push({ role: 'assistant', content: 'thinking...' });
+        this.scrollToBottom();
+
+        try {
+          //De system message met de patientdata wordt meegegeven samen met alle messages
+          const systemMessage = {role: 'system', content: prePrompt}
+          const messagesToSend = [systemMessage, ...this.messages];
+
+          //Alle messages worden meegestuurd voor context
+          const output = await ollama.chat({ model: "medicalexpert", messages: messagesToSend, stream: true,});
+
+          //Het antwoord wordt in losse tokens gestuurd om het effect van typen te geven
+          let responseText = '';
+          for await (const part of output) {
+            //Het antwoord wordt per token in de stream geupdate en getoond
+            responseText += part.message.content;
+            this.messages[this.messages.length - 1].content = responseText;
+            this.scrollToBottom();
+          }
+
+        } catch (error) {
+          console.error('Fout bij het ophalen van antwoord:', error);
+          this.messages.push({ role: 'assistant', content: "Sorry, something went wrong." });
+          this.scrollToBottom();
+        }
+      }
 
     },
+    //Zo hoeft de gebruiker niet zelf te scrollen
     scrollToBottom() {
       this.$nextTick(() => {
         const chatWindow = this.$refs.chatWindow;
