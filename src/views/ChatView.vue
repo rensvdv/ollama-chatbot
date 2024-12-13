@@ -7,14 +7,14 @@
     <div class="chat-window" ref="chatWindow">
       <div v-for="(message, index) in messages" :key="index">
         <!-- Bot message with profile -->
-        <div v-if="message.sender === 'bot'" class="bot-message-container">
+        <div v-if="message.role === 'system'" class="bot-message-container">
           <img src="/src/assets/boticon.png" alt="Bot Profile" class="bot-profile" />
-          <div class="bot-message">{{ message.text }}</div>
+          <div class="bot-message">{{ message.content }}</div>
         </div>
 
         <!-- User message -->
         <div v-else class="user-message">
-          {{ message.text }}
+          {{ message.content }}
         </div>
       </div>
     </div>
@@ -33,55 +33,64 @@
 
 <script>
 import ollama from 'ollama';
-
+const CONTEXT_LIMIT = 9500;
 export default {
   name: "ChatView",
   data() {
     return {
-      messages: [], // Array voor opgeslagen berichten
-      userInput: '', // Gebruikersinvoer
-      isTyping: false, // Typ-indicator voor de bot
-      context: []
+      messages: [],
+      userInput: '',
+      context: [] //de context is een array aan tokens, deze wordt opgeslagen bij een response en meegestuurd bij een nieuwe om context te geven aan de prompt
     };
   },
   methods: {
     async sendGenerateMessage() {
-      if (this.userInput.trim() === "") return; // Voorkom lege berichten
+      if (this.userInput.trim() !== "")
+      {
+        //Messages wordt geupdate en de prompt wordt gedefinieerd.
+        this.messages.push({ role: 'user', content: this.userInput });
+        const prompt = this.userInput;
+        this.userInput = '';
 
-      // Voeg het gebruikersbericht toe
-      this.messages.push({ sender: 'user', text: this.userInput });
-
-      // Maak de gebruikersinvoer leeg
-      this.userInput = '';
-
-      // Voeg tijdelijk bericht voor de bot toe
-      this.messages.push({ sender: 'bot', text: 'thinking...' });
-      this.scrollToBottom();
-      // Bot antwoord laden
-      try {
-        const prompt = this.messages.map(msg => msg.text).join('\n');
-        console.log(prompt)// Combineer berichten tot prompt
-        const output = await ollama.generate({ model: "medicalexpert", prompt: prompt, stream: true });
-
-        let responseText = '';
-        for await (const part of output) {
-          responseText += part.response; // Voeg het antwoord van elke part samen
-
-          // Direct update de botbericht terwijl de stream binnenkomt
-          this.messages[this.messages.length - 1].text = responseText;
-          this.scrollToBottom();
-
-          if (part.done === true) {
-            console.log(part.context);
-            this.context.push(...part.context);
-          }
-        }
-
-      } catch (error) {
-        console.error('Fout bij het ophalen van antwoord:', error);
-        this.messages.push({ sender: 'bot', text: "Sorry, something went wrong." });
+        // Toon een tijdelijk bericht tijdens het proberen van de API call
+        this.messages.push({ role: 'system', content: 'thinking...' });
         this.scrollToBottom();
+
+        try {
+          console.log(prompt)
+          const output = await ollama.generate({ model: "llama3.2", prompt: prompt, stream: true, context: this.context });
+
+
+          //het antwoord wordt in losse tokens gestuurd om het effect van typen te geven
+          let responseText = '';
+          for await (const part of output) {
+
+            //het antwoord wordt per token in de stream geupdate en getoond
+            responseText += part.response;
+            this.messages[this.messages.length - 1].content = responseText;
+            this.scrollToBottom();
+
+            //als het antwoord compleet is, wordt de context geupdate
+            if (part.done === true) {
+              console.log(part.context);
+              this.context.push(...part.context);
+
+              // Controleer of de contextlimiet is overschreden
+              if (this.context.length > CONTEXT_LIMIT) {
+                // Verwijder de oudste items uit de context om binnen de limiet te blijven
+                const excess = this.context.length - CONTEXT_LIMIT;
+                this.context.splice(0, excess);
+              }
+            }
+          }
+
+        } catch (error) {
+          console.error('Fout bij het ophalen van antwoord:', error);
+          this.messages.push({ role: 'system', content: "Sorry, something went wrong." });
+          this.scrollToBottom();
+        }
       }
+
     },
     scrollToBottom() {
       this.$nextTick(() => {
