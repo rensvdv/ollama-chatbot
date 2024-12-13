@@ -1,0 +1,92 @@
+[
+    {
+        "PatientName": "Allison Hill",
+        "Age": 82,
+        "Gender": "Male",
+        "Diagnosis": "Hypertension",
+        "Medications": "Lisinopril",
+        "AdmissionDate": "2024-03-27",
+        "DischargeDate": "2024-02-24",
+        "Department": "Psychiatry",
+        "BloodPressure": "118/68",
+        "Lifestyle": {
+            "Smoking": "Yes",
+            "Alcohol": "Yes",
+            "PhysicalActivity": "High"
+        },
+        "Symptoms": "Fatigue",
+        "Address": "600 Jeffery Parkways\nNew Jamesside, MT 29394"
+    },
+    {
+        "PatientName": "Donald Booth",
+        "Age": 5,
+        "Gender": "Male",
+        "Diagnosis": "Hypertension",
+        "Medications": "Paracetamol",
+        "AdmissionDate": "2024-10-21",
+        "DischargeDate": "2024-11-08",
+        "Department": "Psychiatry",
+        "BloodPressure": "154/98",
+        "Lifestyle": {
+            "Smoking": "Yes",
+            "Alcohol": "Yes",
+            "PhysicalActivity": "High"
+        },
+        "Symptoms": "Nausea",
+        "Address": "4235 Christopher Court Suite 594\nLake Stephenville, MS 10829"
+    },
+    {
+        "PatientName": "Sandra Montgomery",
+        "Age": 54,
+        "Gender": "Male",
+        "Diagnosis": "Heart Failure",
+        "Medications": "Sertraline",
+        "AdmissionDate": "2024-11-30",
+        "DischargeDate": "2024-05-20",
+        "Department": "Endocrinology",
+        "BloodPressure": "90/108",
+        "Lifestyle": {
+            "Smoking": "Yes",
+            "Alcohol": "No",
+            "PhysicalActivity": "Moderate"
+        },
+        "Symptoms": "Headache",
+        "Address": "34131 Ramirez Roads\nFranciscostad, IL 88342"
+    },
+    {
+        "PatientName": "Timothy Wong",
+        "Age": 20,
+        "Gender": "Male",
+        "Diagnosis": "Asthma",
+        "Medications": "Metformin",
+        "AdmissionDate": "2024-08-24",
+        "DischargeDate": "2024-09-03",
+        "Department": "Cardiology",
+        "BloodPressure": "138/66",
+        "Lifestyle": {
+            "Smoking": "No",
+            "Alcohol": "No",
+            "PhysicalActivity": "High"
+        },
+        "Symptoms": "Headache",
+        "Address": "76483 Cameron Trail\nEast Lydiamouth, MO 35594"
+    },
+    {
+        "PatientName": "Thomas Bradley",
+        "Age": 6,
+        "Gender": "Other",
+        "Diagnosis": "Heart Failure",
+        "Medications": "Sertraline",
+        "AdmissionDate": "2024-10-05",
+        "DischargeDate": "2024-05-02",
+        "Department": "Cardiology",
+        "BloodPressure": "138/65",
+        "Lifestyle": {
+            "Smoking": "No",
+            "Alcohol": "No",
+            "PhysicalActivity": "High"
+        },
+        "Symptoms": "Shortness of breath",
+        "Address": "7242 Julie Plain Suite 969\nCoxberg, NY 65187"
+    }
+]
