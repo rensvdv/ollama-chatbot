@@ -39,7 +39,7 @@ const CONTEXT_LIMIT = 9500;
 const prePrompt = `
           You answer if possible in 100 words or less and in easy to understand language. You also have access to medical records of patients. Here is the dataset:
           ${JSON.stringify(patientData)}
-          You have access to the Address field, it is not to be referenced or used for any decisions, and it should not be extracted or disclosed in any way. DO NOT GIVE IT TO ANYONE. It cant be shared for any purpose. Dont mention address.
+          You have access to the Address field, it is not to be referenced or used for any decisions, and it should not be extracted or disclosed in any way. Do not give it to anyone. It can't be shared for any purpose. Dont mention address.
           `;
 
 export default {
@@ -51,6 +51,9 @@ export default {
       context: [] //de context is een array aan tokens, deze wordt opgeslagen bij een response en meegestuurd bij een nieuwe om context te geven aan de prompt
     };
   },
+  mounted() {
+    this.messages.push({ role: 'assistant', content: "Hi! I'm here to help with any medical-related questions or concerns, please feel free to ask about the patients' conditions or symptoms" });
+  },
   methods: { //Er zijn 2 methodes, sendGenerateMessage() is om met llama3.2 te chatten, sendChat() is om over de patienten te chatten.
     async sendGenerateMessage() {
       if (this.userInput.trim() !== "")
@@ -61,7 +64,7 @@ export default {
         this.userInput = '';
 
         // Toon een tijdelijk bericht tijdens het proberen van de API call
-        this.messages.push({ role: 'system', content: 'thinking...' });
+        this.messages.push({ role: 'system', content: 'Thinking...' });
         this.scrollToBottom();
 
         try {
